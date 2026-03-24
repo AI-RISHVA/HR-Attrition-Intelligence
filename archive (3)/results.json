@@ -1,0 +1,343 @@
+{
+  "meta": {
+    "fileName": "HR_Analytics.csv.csv",
+    "totalRows": 1470,
+    "leftCount": 237,
+    "attritionRate": 16.1,
+    "isBalanced": false,
+    "isLarge": false,
+    "smoteUsed": true,
+    "avgIncomeLeft": 4787.0,
+    "avgAgeLeft": 33.6,
+    "estimatedCost": "Rs.56.5 Cr"
+  },
+  "stripValues": {
+    "otRisk": "30.5",
+    "singleRisk": "25.5",
+    "youngRate": "35.8",
+    "newJoin": "34.9",
+    "lowInc": "29.3",
+    "longStay": "8.1"
+  },
+  "targets": {
+    "acc": 0.8,
+    "rec": 0.5,
+    "f1": 0.5,
+    "auc": 0.75
+  },
+  "models": [
+    {
+      "name": "Logistic Regression",
+      "threshold": 0.595,
+      "accuracy": 0.7891,
+      "recall": 0.617,
+      "f1": 0.4833,
+      "auc": 0.7818,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Decision Tree",
+      "threshold": 0.645,
+      "accuracy": 0.7279,
+      "recall": 0.5957,
+      "f1": 0.4118,
+      "auc": 0.6696,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Random Forest",
+      "threshold": 0.425,
+      "accuracy": 0.8129,
+      "recall": 0.5319,
+      "f1": 0.4762,
+      "auc": 0.7385,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Gradient Boosting",
+      "threshold": 0.345,
+      "accuracy": 0.8333,
+      "recall": 0.4681,
+      "f1": 0.4731,
+      "auc": 0.7613,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "XGBoost",
+      "threshold": 0.41,
+      "accuracy": 0.8469,
+      "recall": 0.5106,
+      "f1": 0.5161,
+      "auc": 0.7642,
+      "allMet": true,
+      "best": true
+    }
+  ],
+  "bestModel": {
+    "name": "XGBoost",
+    "threshold": 0.41,
+    "accuracy": 0.8469,
+    "recall": 0.5106,
+    "f1": 0.5161,
+    "auc": 0.7642,
+    "allMet": true,
+    "cvMean": 0.9516,
+    "cvStd": 0.0088,
+    "cvFolds": [
+      0.9445,
+      0.9646,
+      0.9596,
+      0.9458,
+      0.9433
+    ]
+  },
+  "featureImportance": [
+    {
+      "name": "StockOptionLevel",
+      "value": 0.1112
+    },
+    {
+      "name": "YearsWithoutPromotion",
+      "value": 0.0444
+    },
+    {
+      "name": "JobLevel",
+      "value": 0.0434
+    },
+    {
+      "name": "JobSatisfaction",
+      "value": 0.0425
+    },
+    {
+      "name": "OverallSatisfaction",
+      "value": 0.0401
+    },
+    {
+      "name": "WorkLifeBalance",
+      "value": 0.0381
+    },
+    {
+      "name": "YearsWithCurrManager",
+      "value": 0.0335
+    },
+    {
+      "name": "BusinessTravel",
+      "value": 0.0326
+    },
+    {
+      "name": "MaritalStatus",
+      "value": 0.0325
+    },
+    {
+      "name": "SalaryPerYear",
+      "value": 0.032
+    }
+  ],
+  "charts": {
+    "department": [
+      {
+        "name": "Sales",
+        "left": 92,
+        "total": 446,
+        "rate": 20.6
+      },
+      {
+        "name": "Human Resources",
+        "left": 12,
+        "total": 63,
+        "rate": 19.0
+      },
+      {
+        "name": "Research & Development",
+        "left": 133,
+        "total": 961,
+        "rate": 13.8
+      }
+    ],
+    "ageGroup": [
+      {
+        "name": "18-25",
+        "rate": 35.8,
+        "total": 123,
+        "left": 44
+      },
+      {
+        "name": "26-30",
+        "rate": 21.3,
+        "total": 263,
+        "left": 56
+      },
+      {
+        "name": "31-35",
+        "rate": 17.5,
+        "total": 343,
+        "left": 60
+      },
+      {
+        "name": "36-40",
+        "rate": 9.1,
+        "total": 276,
+        "left": 25
+      },
+      {
+        "name": "41-50",
+        "rate": 10.6,
+        "total": 322,
+        "left": 34
+      },
+      {
+        "name": "51+",
+        "rate": 12.6,
+        "total": 143,
+        "left": 18
+      }
+    ],
+    "tenure": [
+      {
+        "name": "<1yr",
+        "rate": 34.9,
+        "total": 215
+      },
+      {
+        "name": "1-3yr",
+        "rate": 18.4,
+        "total": 255
+      },
+      {
+        "name": "3-5yr",
+        "rate": 13.1,
+        "total": 306
+      },
+      {
+        "name": "5-10yr",
+        "rate": 12.3,
+        "total": 448
+      },
+      {
+        "name": "10yr+",
+        "rate": 8.1,
+        "total": 246
+      }
+    ],
+    "income": [
+      {
+        "name": "Low",
+        "rate": 29.3,
+        "total": 369
+      },
+      {
+        "name": "Mid",
+        "rate": 14.1,
+        "total": 368
+      },
+      {
+        "name": "High",
+        "rate": 10.6,
+        "total": 367
+      },
+      {
+        "name": "Very High",
+        "rate": 10.3,
+        "total": 368
+      }
+    ],
+    "overtime": {
+      "yes": 127,
+      "yesStay": 289,
+      "no": 110,
+      "noStay": 944,
+      "yesRate": 30.5,
+      "noRate": 10.4
+    },
+    "satisfaction": [
+      {
+        "name": "Level 1",
+        "rate": 22.8,
+        "total": 289
+      },
+      {
+        "name": "Level 2",
+        "rate": 16.4,
+        "total": 280
+      },
+      {
+        "name": "Level 3",
+        "rate": 16.5,
+        "total": 442
+      },
+      {
+        "name": "Level 4",
+        "rate": 11.3,
+        "total": 459
+      }
+    ],
+    "marital": [
+      {
+        "name": "Single",
+        "left": 120,
+        "total": 470,
+        "rate": 25.5
+      },
+      {
+        "name": "Married",
+        "left": 84,
+        "total": 673,
+        "rate": 12.5
+      },
+      {
+        "name": "Divorced",
+        "left": 33,
+        "total": 327,
+        "rate": 10.1
+      }
+    ],
+    "jobRole": [
+      {
+        "name": "Sales Representative",
+        "left": 33,
+        "total": 83,
+        "rate": 39.8
+      },
+      {
+        "name": "Laboratory Technician",
+        "left": 62,
+        "total": 259,
+        "rate": 23.9
+      },
+      {
+        "name": "Human Resources",
+        "left": 12,
+        "total": 52,
+        "rate": 23.1
+      },
+      {
+        "name": "Sales Executive",
+        "left": 57,
+        "total": 326,
+        "rate": 17.5
+      },
+      {
+        "name": "Research Scientist",
+        "left": 47,
+        "total": 292,
+        "rate": 16.1
+      },
+      {
+        "name": "Manufacturing Director",
+        "left": 10,
+        "total": 145,
+        "rate": 6.9
+      },
+      {
+        "name": "Healthcare Representative",
+        "left": 9,
+        "total": 131,
+        "rate": 6.9
+      }
+    ]
+  }
+}

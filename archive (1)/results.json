@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "fileName": "train.csv",
+    "totalRows": 59598,
+    "leftCount": 28338,
+    "attritionRate": 47.5,
+    "isBalanced": true,
+    "isLarge": true,
+    "smoteUsed": false,
+    "avgIncomeLeft": 7277.0,
+    "avgAgeLeft": 37.9,
+    "estimatedCost": "Rs.10269.5 Cr"
+  },
+  "stripValues": {
+    "otRisk": "51.5",
+    "singleRisk": "66.8",
+    "youngRate": "53.2",
+    "newJoin": "52.4",
+    "lowInc": "48.7",
+    "longStay": "44.3"
+  },
+  "targets": {
+    "acc": 0.75,
+    "rec": 0.7,
+    "f1": 0.7,
+    "auc": 0.78
+  },
+  "models": [
+    {
+      "name": "Logistic Regression",
+      "threshold": 0.645,
+      "accuracy": 0.6833,
+      "recall": 0.8869,
+      "f1": 0.727,
+      "auc": 0.7951,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Decision Tree",
+      "threshold": 0.625,
+      "accuracy": 0.6692,
+      "recall": 0.9114,
+      "f1": 0.7238,
+      "auc": 0.7975,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Random Forest",
+      "threshold": 0.555,
+      "accuracy": 0.7115,
+      "recall": 0.8892,
+      "f1": 0.7456,
+      "auc": 0.822,
+      "allMet": false,
+      "best": false
+    },
+    {
+      "name": "Gradient Boosting",
+      "threshold": 0.345,
+      "accuracy": 0.7398,
+      "recall": 0.8712,
+      "f1": 0.761,
+      "auc": 0.8488,
+      "allMet": false,
+      "best": true
+    },
+    {
+      "name": "XGBoost",
+      "threshold": 0.33,
+      "accuracy": 0.7341,
+      "recall": 0.8855,
+      "f1": 0.76,
+      "auc": 0.8483,
+      "allMet": false,
+      "best": false
+    }
+  ],
+  "bestModel": {
+    "name": "Gradient Boosting",
+    "threshold": 0.345,
+    "accuracy": 0.7398,
+    "recall": 0.8712,
+    "f1": 0.761,
+    "auc": 0.8488,
+    "allMet": false,
+    "cvMean": 0.8483,
+    "cvStd": 0.0026,
+    "cvFolds": [
+      0.8494,
+      0.8509,
+      0.8432,
+      0.849,
+      0.8489
+    ]
+  },
+  "featureImportance": [
+    {
+      "name": "Job Level",
+      "value": 0.2351
+    },
+    {
+      "name": "Marital Status",
+      "value": 0.1904
+    },
+    {
+      "name": "Remote Work",
+      "value": 0.123
+    },
+    {
+      "name": "Work-Life Balance",
+      "value": 0.1039
+    },
+    {
+      "name": "Distance from Home",
+      "value": 0.0442
+    },
+    {
+      "name": "Number of Promotions",
+      "value": 0.0442
+    },
+    {
+      "name": "Company Reputation",
+      "value": 0.0369
+    },
+    {
+      "name": "Number of Dependents",
+      "value": 0.0356
+    },
+    {
+      "name": "Education Level",
+      "value": 0.0328
+    },
+    {
+      "name": "Gender",
+      "value": 0.0301
+    }
+  ],
+  "charts": {
+    "department": [],
+    "ageGroup": [
+      {
+        "name": "18-25",
+        "rate": 53.2,
+        "total": 11203,
+        "left": 5964
+      },
+      {
+        "name": "26-30",
+        "rate": 49.6,
+        "total": 7023,
+        "left": 3481
+      },
+      {
+        "name": "31-35",
+        "rate": 46.2,
+        "total": 7099,
+        "left": 3278
+      },
+      {
+        "name": "36-40",
+        "rate": 44.2,
+        "total": 7222,
+        "left": 3190
+      },
+      {
+        "name": "41-50",
+        "rate": 46.3,
+        "total": 14352,
+        "left": 6645
+      },
+      {
+        "name": "51+",
+        "rate": 45.5,
+        "total": 12699,
+        "left": 5780
+      }
+    ],
+    "tenure": [
+      {
+        "name": "<1yr",
+        "rate": 52.4,
+        "total": 2421
+      },
+      {
+        "name": "1-3yr",
+        "rate": 52.8,
+        "total": 4819
+      },
+      {
+        "name": "3-5yr",
+        "rate": 54.0,
+        "total": 4758
+      },
+      {
+        "name": "5-10yr",
+        "rate": 51.6,
+        "total": 11863
+      },
+      {
+        "name": "10yr+",
+        "rate": 44.3,
+        "total": 35737
+      }
+    ],
+    "income": [
+      {
+        "name": "Low",
+        "rate": 48.7,
+        "total": 14912
+      },
+      {
+        "name": "Mid",
+        "rate": 47.3,
+        "total": 14914
+      },
+      {
+        "name": "High",
+        "rate": 47.3,
+        "total": 14903
+      },
+      {
+        "name": "Very High",
+        "rate": 47.0,
+        "total": 14915
+      }
+    ],
+    "overtime": {
+      "yes": 10025,
+      "yesStay": 9425,
+      "no": 18313,
+      "noStay": 21835,
+      "yesRate": 51.5,
+      "noRate": 45.6
+    },
+    "satisfaction": [
+      {
+        "name": "Level High",
+        "rate": 45.3,
+        "total": 29779
+      },
+      {
+        "name": "Level Low",
+        "rate": 52.4,
+        "total": 5891
+      },
+      {
+        "name": "Level Medium",
+        "rate": 45.3,
+        "total": 11817
+      },
+      {
+        "name": "Level Very High",
+        "rate": 52.9,
+        "total": 12111
+      }
+    ],
+    "marital": [
+      {
+        "name": "Single",
+        "left": 13923,
+        "total": 20835,
+        "rate": 66.8
+      },
+      {
+        "name": "Divorced",
+        "left": 3604,
+        "total": 8855,
+        "rate": 40.7
+      },
+      {
+        "name": "Married",
+        "left": 10811,
+        "total": 29908,
+        "rate": 36.1
+      }
+    ],
+    "jobRole": [
+      {
+        "name": "Education",
+        "left": 6085,
+        "total": 12490,
+        "rate": 48.7
+      },
+      {
+        "name": "Media",
+        "left": 4542,
+        "total": 9574,
+        "rate": 47.4
+      },
+      {
+        "name": "Healthcare",
+        "left": 6454,
+        "total": 13642,
+        "rate": 47.3
+      },
+      {
+        "name": "Technology",
+        "left": 7333,
+        "total": 15507,
+        "rate": 47.3
+      },
+      {
+        "name": "Finance",
+        "left": 3924,
+        "total": 8385,
+        "rate": 46.8
+      }
+    ]
+  }
+}
