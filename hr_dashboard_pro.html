@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HR Attrition Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --cream:#f9f7f3;--white:#ffffff;--paper:#f2efe8;--paper2:#ece9e1;
+  --ink:#18160f;--ink2:#38352c;--ink3:#68655c;--ink4:#a09d96;
+  --coral:#c94f32;--coral-lt:#fdf0ec;--coral-md:#f0bfb2;
+  --navy:#1b3658;--navy-lt:#e6edf5;--navy-md:#a8c2d8;
+  --gold:#b8821e;--gold-lt:#fdf4e3;--gold-md:#e8cc88;
+  --sage:#2e6b4a;--sage-lt:#e5f2eb;--sage-md:#96ccb0;
+  --plum:#5c3591;--plum-lt:#ede6f7;--plum-md:#c0a4e8;
+  --border:#e4e0d6;--border2:#ccc8be;
+  --sh:0 1px 12px rgba(24,22,15,0.07);
+  --sh-lg:0 6px 32px rgba(24,22,15,0.11);
+  --sh-xl:0 12px 48px rgba(24,22,15,0.14);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:14px;
+  background-image:
+    radial-gradient(ellipse 600px 400px at 5% 10%, rgba(184,130,30,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 95% 90%, rgba(27,54,88,0.05) 0%, transparent 70%);
+}
+
+/* ── TOPBAR ── */
+.tb{
+  background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 36px;position:sticky;top:0;z-index:200;
+  border-bottom:1px solid var(--border);box-shadow:0 1px 24px rgba(24,22,15,0.06);
+}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--coral) 0%,var(--gold) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;box-shadow:0 3px 10px rgba(201,79,50,0.28);
+  flex-shrink:0;
+}
+.tb-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-0.2px}
+.tb-sub{font-size:9px;color:var(--ink4);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-status{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 14px;
+  border-radius:999px;font-size:10px;font-weight:600;letter-spacing:0.6px;
+  border:1.5px solid;transition:all 0.3s;
+}
+.st-waiting{background:var(--gold-lt);border-color:var(--gold-md);color:var(--gold)}
+.st-active{background:var(--sage-lt);border-color:var(--sage-md);color:var(--sage)}
+.tb-status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+.tb-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink4)}
+
+/* ── UPLOAD SCREEN ── */
+.upload-screen{
+  min-height:calc(100vh - 60px);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:64px 24px;gap:36px;
+}
+.up-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--coral);display:flex;align-items:center;gap:12px;
+}
+.up-label::before,.up-label::after{content:'';width:48px;height:1px;background:var(--coral-md)}
+.up-heading{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5.5vw,68px);
+  color:var(--ink);line-height:1.02;letter-spacing:-2px;text-align:center;font-weight:600;
+}
+.up-heading em{font-style:italic;color:var(--coral)}
+.up-body{font-size:14px;color:var(--ink3);line-height:1.9;text-align:center;max-width:460px}
+.up-body strong{color:var(--ink);font-weight:600}
+
+/* WORKFLOW STEPS */
+.workflow{
+  display:flex;align-items:stretch;gap:0;background:var(--white);
+  border:1.5px solid var(--border);border-radius:18px;
+  max-width:640px;width:100%;overflow:hidden;box-shadow:var(--sh);
+}
+.wf-step{flex:1;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;
+         border-right:1.5px solid var(--border);transition:background 0.2s;position:relative}
+.wf-step:last-child{border-right:none}
+.wf-step:hover{background:var(--paper)}
+.wf-num{
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;
+  color:var(--ink4);text-transform:uppercase;position:absolute;top:12px;right:14px;
+}
+.wf-icon{
+  width:46px;height:46px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:20px;border:1.5px solid;
+}
+.wi-1{background:var(--coral-lt);border-color:var(--coral-md)}
+.wi-2{background:var(--gold-lt);border-color:var(--gold-md)}
+.wi-3{background:var(--sage-lt);border-color:var(--sage-md)}
+.wf-title{font-size:12px;font-weight:600;color:var(--ink);text-align:center}
+.wf-desc{font-size:10px;color:var(--ink4);text-align:center;line-height:1.5}
+
+/* DROP ZONE */
+.drop-zone{
+  max-width:480px;width:100%;background:var(--white);
+  border:2px dashed var(--border2);border-radius:20px;
+  padding:40px 32px;text-align:center;cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:var(--sh);
+}
+.drop-zone:hover{
+  border-color:var(--coral);background:var(--coral-lt);
+  transform:translateY(-4px);box-shadow:var(--sh-xl);
+}
+.drop-zone.drag{border-color:var(--coral);background:var(--coral-lt);transform:translateY(-4px)}
+.drop-zone.done{border-color:var(--sage);border-style:solid;background:var(--sage-lt)}
+.dz-glyph{font-size:44px;margin-bottom:14px;display:block;transition:transform 0.3s}
+.drop-zone:hover .dz-glyph{transform:scale(1.1) rotate(-5deg)}
+.dz-heading{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;
+            color:var(--ink);margin-bottom:8px;letter-spacing:-0.3px}
+.dz-body{font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:6px}
+.dz-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--coral);
+  background:var(--coral-lt);padding:4px 12px;border-radius:6px;
+  display:inline-block;margin-bottom:20px;border:1px solid var(--coral-md);
+}
+.dz-cta{
+  background:var(--coral);color:white;border:none;padding:11px 26px;
+  border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;box-shadow:0 3px 14px rgba(201,79,50,0.28);
+  letter-spacing:0.3px;
+}
+.dz-cta:hover{background:#b53f24;transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,79,50,0.36)}
+.dz-hint{font-size:10px;color:var(--ink4);margin-top:8px}
+.dz-confirm{font-size:11px;margin-top:10px;display:none;font-weight:500}
+
+.submit-btn{
+  background:linear-gradient(135deg,var(--sage) 0%,#1d5238 100%);
+  color:white;border:none;padding:15px 48px;border-radius:12px;
+  font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;
+  cursor:pointer;transition:all 0.25s;
+  box-shadow:0 4px 20px rgba(46,107,74,0.28);
+  letter-spacing:-0.2px;display:none;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(46,107,74,0.36)}
+.submit-btn.show{display:block}
+
+.err-msg{
+  background:var(--coral-lt);border:1.5px solid var(--coral-md);border-radius:10px;
+  padding:10px 18px;color:var(--coral);font-size:12px;display:none;max-width:460px;
+}
+
+/* ── MAIN DASHBOARD ── */
+#mainDash{display:none}
+.pg{max-width:1380px;margin:0 auto;padding:36px 24px 80px}
+
+/* SECTION HEADER */
+.sh{margin:40px 0 22px;display:flex;align-items:flex-end;justify-content:space-between}
+.sh-l{display:flex;flex-direction:column;gap:5px}
+.sh-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:2.5px;text-transform:uppercase;color:var(--ink4);
+}
+.sh-tag::before{content:'';width:20px;height:1px;background:var(--border2)}
+.sh-title{
+  font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;
+  color:var(--ink);letter-spacing:-0.6px;line-height:1.05;
+}
+.sh-title em{font-style:italic;color:var(--coral)}
+.sh-r{font-size:11px;color:var(--ink4);text-align:right;line-height:1.7}
+.sep{height:1px;background:linear-gradient(90deg,var(--border2) 0%,var(--border) 40%,transparent 100%);margin-bottom:22px}
+
+/* CARDS */
+.card{
+  background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);
+  padding:22px;box-shadow:var(--sh);transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.card:hover{
+  border-color:var(--border2);box-shadow:var(--sh-lg);
+  transform:translateY(-2px);
+}
+.ct{font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:3px;
+    display:flex;align-items:center;gap:8px;letter-spacing:0.2px}
+.ct-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cs{font-size:11px;color:var(--ink4);margin-bottom:16px;line-height:1.5}
+.cw{position:relative;height:200px}.cw-sm{height:170px}
+
+/* GRIDS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.g4,.g3,.g2{grid-template-columns:1fr}}
+
+/* KPI CARDS */
+.kpi{
+  background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);
+  padding:22px 22px 20px 22px;position:relative;overflow:hidden;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:var(--sh);
+  cursor:default;
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:var(--sh-xl)}
+.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:4px 4px 0 0}
+.kpi-bg{position:absolute;bottom:-20px;right:-20px;font-size:80px;opacity:0.04;line-height:1;
+        transition:transform 0.4s,opacity 0.4s}
+.kpi:hover .kpi-bg{transform:scale(1.15);opacity:0.07}
+.kpi-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--ink4);margin-bottom:12px}
+.kpi-num{
+  font-family:'Cormorant Garamond',serif;font-size:44px;line-height:1;
+  margin-bottom:10px;letter-spacing:-1.5px;font-weight:600;
+}
+.kpi-detail{font-size:11px;color:var(--ink3);line-height:1.7}
+.kpi-detail strong{color:var(--ink)}
+
+/* INSIGHT STRIP */
+.istrip{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);
+  overflow:hidden;margin-bottom:18px;box-shadow:var(--sh);
+}
+.is-cell{
+  padding:16px 18px;border-right:1.5px solid var(--border);
+  transition:all 0.2s;position:relative;cursor:default;
+}
+.is-cell:last-child{border-right:none}
+.is-cell:hover{background:var(--paper)}
+.is-cell::after{
+  content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%) translateY(6px);
+  background:var(--ink);color:white;font-size:10px;padding:6px 10px;
+  border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;
+  transition:all 0.2s;z-index:10;letter-spacing:0.2px;
+  box-shadow:0 4px 12px rgba(24,22,15,0.2);
+}
+.is-cell:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+.is-top{position:absolute;top:0;left:0;right:0;height:3px;border-radius:0}
+.is-num{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1;
+        margin-bottom:5px;font-weight:600}
+.is-lbl{font-size:9px;color:var(--ink4);text-transform:uppercase;letter-spacing:1px;line-height:1.4}
+
+/* PROGRESS BARS */
+.pb-list{display:flex;flex-direction:column;gap:13px}
+.pb-row{display:flex;align-items:center;gap:10px}
+.pb-idx{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink4);min-width:18px;text-align:right}
+.pb-nm{font-size:12px;color:var(--ink2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:130px}
+.pb-track{flex:1;height:7px;background:var(--paper2);border-radius:4px;overflow:hidden}
+.pb-bar{height:100%;border-radius:4px;transition:width 1.4s cubic-bezier(0.22,1,0.36,1);width:0}
+.pb-pct{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;min-width:38px;text-align:right}
+
+/* METRIC BLOCKS */
+.mm-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+@media(max-width:900px){.mm-row{grid-template-columns:repeat(2,1fr)}}
+.mm{
+  background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:22px 20px;text-align:center;box-shadow:var(--sh);position:relative;overflow:hidden;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);cursor:default;
+}
+.mm:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.mm-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.mm-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--ink4);margin-bottom:10px}
+.mm-num{font-family:'Cormorant Garamond',serif;font-size:36px;line-height:1;margin-bottom:10px;font-weight:600}
+.mm-track{height:4px;background:var(--paper2);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.mm-prog{height:100%;border-radius:2px;width:0;transition:width 1.6s cubic-bezier(0.22,1,0.36,1)}
+.mm-foot{font-size:10px;color:var(--ink4)}
+.ok{color:var(--sage);font-weight:700}.no{color:var(--coral);font-weight:700}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{
+  text-align:left;padding:10px 14px;font-size:9px;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--ink4);font-weight:600;
+  background:var(--paper);border-bottom:1.5px solid var(--border);
+}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);transition:background 0.15s}
+.tbl tr:hover td{background:var(--paper)}
+.tbl tr.best td{background:linear-gradient(90deg,rgba(27,54,88,0.04) 0%,transparent 100%)}
+.badge{
+  display:inline-block;background:var(--navy);color:white;
+  font-size:8px;padding:2px 8px;border-radius:999px;font-weight:700;
+  margin-left:8px;letter-spacing:0.8px;vertical-align:middle;
+}
+.p{color:var(--sage);font-weight:600}.f{color:var(--coral)}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:999px;font-size:9px;font-weight:600;border:1.5px solid;letter-spacing:0.4px;
+}
+.pill::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+.ok-pill{background:var(--sage-lt);border-color:var(--sage-md);color:var(--sage)}
+.md-pill{background:var(--gold-lt);border-color:var(--gold-md);color:var(--gold)}
+.no-pill{background:var(--coral-lt);border-color:var(--coral-md);color:var(--coral)}
+
+/* FOOTER */
+.footer{
+  border-top:1.5px solid var(--border);margin-top:16px;padding:20px 0 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:10px;color:var(--ink4);
+}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--ink3)}
+
+.nodata{text-align:center;padding:44px 20px;color:var(--ink4);font-size:12px;line-height:1.7}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.ani{animation:fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both}
+.d1{animation-delay:0.05s}.d2{animation-delay:0.1s}.d3{animation-delay:0.15s}.d4{animation-delay:0.2s}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-brand">
+    <div class="tb-mark">◈</div>
+    <div>
+      <div class="tb-name">HR Attrition Intelligence</div>
+      <div class="tb-sub">People Analytics Platform</div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-status st-waiting" id="tbStatus">Awaiting Data</div>
+    <div class="tb-date" id="tbDate"></div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="upload-screen" id="uploadScreen">
+  <div class="up-label">Machine Learning · HR Analytics</div>
+  <h1 class="up-heading">Workforce Attrition<br><em>Intelligence</em></h1>
+  <div class="drop-zone" id="dropZone">
+    <span class="dz-glyph">📂</span>
+    <div class="dz-heading">Upload results.json</div>
+    <div class="dz-tag">results.json</div><br>
+    <button class="dz-cta" onclick="document.getElementById('jsonIn').click()">Select File</button>
+    <div class="dz-hint">or drag & drop your file here</div>
+    <div class="dz-confirm" id="dzConfirm"></div>
+    <input type="file" id="jsonIn" accept=".json" style="display:none"/>
+  </div>
+
+  <button class="submit-btn" id="goBtn" onclick="buildDashboard()">Generate Dashboard →</button>
+  <div class="err-msg" id="errMsg"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="mainDash">
+  <div class="pg" id="dc"></div>
+</div>
+
+<script>
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+Chart.defaults.font.family="'DM Sans',sans-serif";
+Chart.defaults.font.size=11;
+Chart.defaults.color='#68655c';
+
+let D=null, CH={};
+
+document.getElementById('jsonIn').addEventListener('change',function(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      D=JSON.parse(ev.target.result);
+      document.getElementById('dropZone').classList.add('done');
+      const s=document.getElementById('dzConfirm');
+      s.style.display='block'; s.style.color='var(--sage)';
+      s.textContent=`✓ ${D.meta?.fileName||f.name} — ready to visualize`;
+      document.getElementById('goBtn').classList.add('show');
+    }catch(e){showErr('Invalid JSON file. Please upload results.json from the pipeline.')}
+  };
+  r.readAsText(f);
+});
+
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const dt=new DataTransfer();dt.items.add(f);
+    document.getElementById('jsonIn').files=dt.files;
+    document.getElementById('jsonIn').dispatchEvent(new Event('change'));}
+});
+
+function showErr(m){const e=document.getElementById('errMsg');e.style.display='block';e.textContent='⚠ '+m;}
+function killCharts(){Object.values(CH).forEach(c=>{try{c.destroy()}catch(e){}});CH={};}
+
+const PAL={coral:'rgba(201,79,50,',navy:'rgba(27,54,88,',gold:'rgba(184,130,30,',sage:'rgba(46,107,74,',plum:'rgba(92,53,145,',teal:'rgba(30,110,120,'};
+const PK=Object.keys(PAL);
+const c=(k,a=0.75)=>PAL[k]+a+')';
+const GG='rgba(24,22,15,0.05)';
+
+function bar(id,labels,sets,opts={}){
+  const el=document.getElementById(id);if(!el)return;
+  CH[id]=new Chart(el,{type:'bar',data:{labels,datasets:sets},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:sets.length>1,position:'bottom',labels:{boxWidth:9,padding:12,color:'#68655c'}}},
+    scales:{
+      x:{grid:{display:false},ticks:{color:'#68655c'}},
+      y:{grid:{color:GG,borderDash:[3,3]},ticks:{color:'#68655c',...(opts.yt||{})}},...(opts.axes||{})},
+    ...opts.extra}});
+}
+
+function buildDashboard(){
+  if(!D){showErr('Please upload results.json first.');return;}
+  killCharts();
+
+  const meta=D.meta||{},best=D.bestModel||{},models=D.models||[];
+  const ch=D.charts||{},strip=D.stripValues||{},tgt=D.targets||{acc:.8,rec:.5,f1:.5,auc:.75};
+  const fi=D.featureImportance||[];
+
+  document.getElementById('uploadScreen').style.display='none';
+  document.getElementById('mainDash').style.display='block';
+  document.getElementById('tbStatus').textContent=`${meta.fileName||'Dataset'} · ${(meta.totalRows||0).toLocaleString()} rows`;
+  document.getElementById('tbStatus').className='tb-status st-active';
+
+  const allMet=m=>m.accuracy>=tgt.acc&&m.recall>=tgt.rec&&m.f1>=tgt.f1&&m.auc>=tgt.auc;
+  const spCls=m=>allMet(m)?'ok-pill':(m.recall>=tgt.rec?'md-pill':'no-pill');
+  const spTxt=m=>allMet(m)?'All Targets Met':(m.recall>=tgt.rec?'Partial':'Below Target');
+
+  document.getElementById('dc').innerHTML=`
+
+  <!-- SECTION 01 -->
+  <div class="sh ani"><div class="sh-l">
+    <div class="sh-tag">01 — Overview</div>
+    <h2 class="sh-title">Attrition <em>Summary</em></h2>
+  </div><div class="sh-r">${meta.fileName||'Dataset'} &nbsp;·&nbsp; ${(meta.totalRows||0).toLocaleString()} Employees<br>${best.name||'—'} · CV AUC ${best.cvMean||'—'}</div></div>
+  <div class="sep"></div>
+
+  <div class="g4 ani d1">
+    <div class="kpi" style="border-top-color:var(--coral)">
+      <div class="kpi-bar" style="background:var(--coral)"></div>
+      <div class="kpi-bg">👥</div>
+      <div class="kpi-lbl">Total Attrition</div>
+      <div class="kpi-num" style="color:var(--coral)">${(meta.leftCount||0).toLocaleString()}</div>
+      <div class="kpi-detail">out of <strong>${(meta.totalRows||0).toLocaleString()}</strong> employees departed</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--navy)"></div>
+      <div class="kpi-bg">📊</div>
+      <div class="kpi-lbl">Attrition Rate</div>
+      <div class="kpi-num" style="color:var(--navy)">${meta.attritionRate||0}%</div>
+      <div class="kpi-detail">${meta.isBalanced?'Balanced distribution':'Industry benchmark ~13%'}<br>${meta.isBalanced?'SMOTE not applied':parseFloat(meta.attritionRate||0)>13?'<strong style="color:var(--coral)">Above benchmark ↑</strong>':'<strong style="color:var(--sage)">Below benchmark ↓</strong>'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--gold)"></div>
+      <div class="kpi-bg">💼</div>
+      <div class="kpi-lbl">Estimated Cost (INR)</div>
+      <div class="kpi-num" style="color:var(--gold)">${meta.estimatedCost||'N/A'}</div>
+      <div class="kpi-detail">6-month salary replacement<br>cost per departing employee</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-bar" style="background:var(--plum)"></div>
+      <div class="kpi-bg">🎯</div>
+      <div class="kpi-lbl">Avg. Age at Departure</div>
+      <div class="kpi-num" style="color:var(--plum)">${meta.avgAgeLeft||'—'}</div>
+      <div class="kpi-detail">Best model: <strong>${best.name||'—'}</strong><br>Threshold: ${best.threshold||'—'}</div>
+    </div>
+  </div>
+
+  <div class="istrip ani d2">
+    <div class="is-cell" data-tooltip="% of overtime employees who left"><div class="is-top" style="background:var(--coral)"></div><div class="is-num" style="color:var(--coral)">${strip.otRisk||'—'}%</div><div class="is-lbl">Overtime → Left</div></div>
+    <div class="is-cell" data-tooltip="Attrition rate among single employees"><div class="is-top" style="background:var(--gold)"></div><div class="is-num" style="color:var(--gold)">${strip.singleRisk||'—'}%</div><div class="is-lbl">Single → Left</div></div>
+    <div class="is-cell" data-tooltip="Attrition rate in 18-25 age group"><div class="is-top" style="background:var(--navy)"></div><div class="is-num" style="color:var(--navy)">${strip.youngRate||'—'}%</div><div class="is-lbl">Age 18–25 Rate</div></div>
+    <div class="is-cell" data-tooltip="Attrition among employees with < 1 year tenure"><div class="is-top" style="background:var(--coral)"></div><div class="is-num" style="color:var(--coral)">${strip.newJoin||'—'}%</div><div class="is-lbl">Tenure &lt; 1 Year</div></div>
+    <div class="is-cell" data-tooltip="Attrition rate in lowest income quartile"><div class="is-top" style="background:var(--plum)"></div><div class="is-num" style="color:var(--plum)">${strip.lowInc||'—'}%</div><div class="is-lbl">Low Income Rate</div></div>
+    <div class="is-cell" data-tooltip="Attrition rate for 10+ year employees"><div class="is-top" style="background:var(--sage)"></div><div class="is-num" style="color:var(--sage)">${strip.longStay||'—'}%</div><div class="is-lbl">Tenure 10+ Years</div></div>
+  </div>
+
+  <!-- SECTION 02 -->
+  <div class="sh ani"><div class="sh-l">
+    <div class="sh-tag">02 — Workforce Analysis</div>
+    <h2 class="sh-title">Who is <em>Leaving?</em></h2>
+  </div><div class="sh-r">Breakdown by department, age & tenure</div></div>
+  <div class="sep"></div>
+
+  <div class="g3 ani">
+    ${ch.department?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--coral)"></span>By Department</div><div class="cs">Highest risk: ${ch.department[0]?.name} at ${ch.department[0]?.rate}%</div><div class="cw cw-sm"><canvas id="deptC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No department column in dataset</div></div>`}
+    ${ch.ageGroup?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--navy)"></span>By Age Group</div><div class="cs">Attrition rate (%) across age brackets</div><div class="cw cw-sm"><canvas id="ageC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No age data available</div></div>`}
+    ${ch.tenure?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--gold)"></span>By Tenure</div><div class="cs">New joiners show highest departure risk</div><div class="cw cw-sm"><canvas id="tenC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No tenure data available</div></div>`}
+  </div>
+
+  <div class="g2 ani">
+    ${ch.income?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--plum)"></span>By Income Level</div><div class="cs">Lower income brackets correlate with higher attrition</div><div class="cw"><canvas id="incC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No income data available</div></div>`}
+    ${ch.jobRole?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--sage)"></span>By Job Role</div><div class="cs">Highest risk: ${ch.jobRole[0]?.name} at ${ch.jobRole[0]?.rate}%</div><div class="pb-list" id="roleL" style="margin-top:14px"></div></div>`
+      :`<div class="card"><div class="nodata">No role data available</div></div>`}
+  </div>
+
+  <!-- SECTION 03 -->
+  <div class="sh ani"><div class="sh-l">
+    <div class="sh-tag">03 — Root Causes</div>
+    <h2 class="sh-title">Why are They <em>Leaving?</em></h2>
+  </div><div class="sh-r">Overtime · Satisfaction · Demographics</div></div>
+  <div class="sep"></div>
+
+  <div class="g3 ani">
+    ${ch.overtime?.yesRate!=null
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--coral)"></span>Overtime Impact</div><div class="cs">With OT: ${ch.overtime.yesRate}% &nbsp;vs&nbsp; Without OT: ${ch.overtime.noRate}%</div><div class="cw cw-sm"><canvas id="otC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No overtime data available</div></div>`}
+    ${ch.satisfaction?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--gold)"></span>Job Satisfaction</div><div class="cs">Low satisfaction is a leading attrition predictor</div><div class="cw cw-sm"><canvas id="satC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No satisfaction data available</div></div>`}
+    ${ch.marital?.length
+      ?`<div class="card"><div class="ct"><span class="ct-dot" style="background:var(--navy)"></span>Marital Status</div><div class="cs">${ch.marital[0]?.name} employees at ${ch.marital[0]?.rate}% risk</div><div class="cw cw-sm"><canvas id="marC"></canvas></div></div>`
+      :`<div class="card"><div class="nodata">No marital status data available</div></div>`}
+  </div>
+
+  ${fi.length?`
+  <div class="card ani" style="margin-bottom:18px">
+    <div class="ct"><span class="ct-dot" style="background:var(--plum)"></span>Top Predictors of Attrition — Feature Importance</div>
+    <div class="cs">Ranked by importance score from ${best.name} · Higher value = stronger predictor</div>
+    <div class="pb-list" id="featL" style="margin-top:8px"></div>
+  </div>`:''}
+
+  <!-- SECTION 04 -->
+  <div class="sh ani"><div class="sh-l">
+    <div class="sh-tag">04 — Model Performance</div>
+    <h2 class="sh-title">ML <em>Results</em></h2>
+  </div><div class="sh-r">Best Model: ${best.name} &nbsp;·&nbsp; Threshold ${best.threshold}</div></div>
+  <div class="sep"></div>
+
+  <div class="mm-row ani">
+    ${[['Accuracy',best.accuracy,'navy',tgt.acc,'≥ 80–85%'],
+       ['Recall',best.recall,'sage',tgt.rec,'≥ 50%'],
+       ['F1 Score',best.f1,'gold',tgt.f1,'≥ 50%'],
+       ['ROC AUC',best.auc,'coral',tgt.auc,'≥ 75%']].map(([l,v,col,t,ts])=>`
+    <div class="mm">
+      <div class="mm-accent" style="background:var(--${col})"></div>
+      <div class="mm-lbl">${l}</div>
+      <div class="mm-num" style="color:var(--${col})">${((v||0)*100).toFixed(2)}%</div>
+      <div class="mm-track"><div class="mm-prog" style="background:var(--${col})" data-w="${(v||0)*100}"></div></div>
+      <div class="mm-foot">Target ${ts} &nbsp;<span class="${v>=t?'ok':'no'}">${v>=t?'✓ Met':'✗ Miss'}</span></div>
+    </div>`).join('')}
+  </div>
+
+  <div class="g2 ani">
+    <div class="card">
+      <div class="ct"><span class="ct-dot" style="background:var(--navy)"></span>Model Comparison</div>
+      <div class="cs">5 algorithms — Accuracy · Recall · F1 · AUC</div>
+      <div class="cw"><canvas id="modC"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-dot" style="background:var(--sage)"></span>5-Fold Cross Validation — ${best.name}</div>
+      <div class="cs">Mean AUC = ${best.cvMean} ± ${best.cvStd} &nbsp;·&nbsp; Stable & reliable</div>
+      <div style="margin-top:14px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
+          ${(best.cvFolds||[]).map((s,i)=>`
+          <div style="background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--navy);font-weight:600;line-height:1;margin-bottom:4px">${s}</div>
+            <div style="font-size:9px;color:var(--ink4);text-transform:uppercase;letter-spacing:1px">Fold ${i+1}</div>
+          </div>`).join('')}
+        </div>
+        <div style="background:var(--navy-lt);border:1.5px solid var(--navy-md);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--navy);font-weight:600;letter-spacing:-0.5px">${best.cvMean} ± ${best.cvStd}</div>
+          <div style="font-size:9px;color:var(--ink4);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Mean AUC ± Standard Deviation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card ani" style="margin-bottom:18px">
+    <div class="ct"><span class="ct-dot" style="background:var(--ink3)"></span>Complete Model Comparison</div>
+    <div class="cs">Targets: Accuracy ≥ ${tgt.acc} &nbsp;·&nbsp; Recall ≥ ${tgt.rec} &nbsp;·&nbsp; F1 ≥ ${tgt.f1} &nbsp;·&nbsp; AUC ≥ ${tgt.auc}</div>
+    <table class="tbl">
+      <thead><tr><th>Algorithm</th><th>Threshold</th><th>Accuracy</th><th>Recall</th><th>F1 Score</th><th>ROC AUC</th><th>Status</th></tr></thead>
+      <tbody>${models.map(m=>`<tr${m.best?' class="best"':''}>
+        <td style="font-weight:600;color:var(--ink)">${m.name}${m.best?`<span class="badge">BEST</span>`:''}</td>
+        <td style="font-family:'JetBrains Mono',monospace">${m.threshold}</td>
+        <td class="${m.accuracy>=tgt.acc?'p':'f'}">${m.accuracy}</td>
+        <td class="${m.recall>=tgt.rec?'p':'f'}">${m.recall}</td>
+        <td class="${m.f1>=tgt.f1?'p':'f'}">${m.f1}</td>
+        <td class="${m.auc>=tgt.auc?'p':'f'}">${m.auc}</td>
+        <td><span class="pill ${spCls(m)}">${spTxt(m)}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span class="footer-brand">HR Attrition Intelligence</span>
+    <span>${meta.fileName||'Dataset'} &nbsp;·&nbsp; ${(meta.totalRows||0).toLocaleString()} records &nbsp;·&nbsp; ${best.name}</span>
+    <span>${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</span>
+  </div>`;
+
+  // CHARTS
+  if(ch.department?.length)
+    bar('deptC',ch.department.map(x=>x.name),[
+      {label:'Left',data:ch.department.map(x=>x.left),backgroundColor:PK.map(k=>c(k,.78)),borderRadius:6},
+      {label:'Stayed',data:ch.department.map(x=>x.total-x.left),backgroundColor:PK.map(k=>c(k,.12)),borderRadius:6}]);
+
+  if(ch.ageGroup?.length)
+    bar('ageC',ch.ageGroup.map(x=>x.name),[
+      {label:'Attrition %',data:ch.ageGroup.map(x=>x.rate),backgroundColor:PK.map(k=>c(k,.75)),borderRadius:6}],
+      {yt:{callback:v=>v+'%'}});
+
+  if(ch.tenure?.length){
+    const el=document.getElementById('tenC');if(el)
+    CH['tenC']=new Chart(el,{type:'line',data:{labels:ch.tenure.map(x=>x.name),datasets:[{
+      label:'Attrition %',data:ch.tenure.map(x=>x.rate),borderColor:'var(--gold)',
+      backgroundColor:'rgba(184,130,30,0.07)',fill:true,tension:0.45,
+      pointRadius:5,pointBackgroundColor:'white',pointBorderColor:'var(--gold)',
+      pointBorderWidth:2.5,borderWidth:2.5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{grid:{display:false},ticks:{color:'#68655c'}},
+                y:{grid:{color:GG,borderDash:[3,3]},ticks:{callback:v=>v+'%',color:'#68655c'}}}}});
+  }
+
+  if(ch.income?.length)
+    bar('incC',ch.income.map(x=>x.name),[
+      {label:'Attrition %',data:ch.income.map(x=>x.rate),
+       backgroundColor:[c('coral'),c('gold'),c('navy'),c('sage')],borderRadius:10}],
+      {yt:{callback:v=>v+'%'}});
+
+  if(ch.jobRole?.length){
+    const el=document.getElementById('roleL');if(el){
+      const mx=ch.jobRole[0].rate;
+      ch.jobRole.forEach((r,i)=>{
+        el.innerHTML+=`<div class="pb-row">
+          <span class="pb-idx">${String(i+1).padStart(2,'0')}</span>
+          <span class="pb-nm">${r.name}</span>
+          <div class="pb-track"><div class="pb-bar" data-w="${r.rate/mx*100}" style="background:${PAL[PK[i%PK.length]]+'0.72)'}"></div></div>
+          <span class="pb-pct" style="color:${PAL[PK[i%PK.length]]+'0.9)'}">${r.rate}%</span>
+        </div>`;
+      });
+    }
+  }
+
+  if(ch.overtime?.yesRate!=null){
+    const el=document.getElementById('otC');if(el)
+    CH['otC']=new Chart(el,{type:'doughnut',data:{
+      labels:[`With OT — Left (${ch.overtime.yesRate}%)`,`With OT — Stayed`,`No OT — Left (${ch.overtime.noRate}%)`,`No OT — Stayed`],
+      datasets:[{data:[ch.overtime.yes,ch.overtime.yesStay,ch.overtime.no,ch.overtime.noStay],
+        backgroundColor:[c('coral',.85),c('coral',.1),c('navy',.75),c('navy',.1)],
+        borderWidth:2,borderColor:'white'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+        plugins:{legend:{position:'bottom',labels:{boxWidth:9,padding:8,font:{size:10},color:'#68655c'}}}}});
+  }
+
+  if(ch.satisfaction?.length)
+    bar('satC',ch.satisfaction.map(x=>x.name),[
+      {label:'Attrition %',data:ch.satisfaction.map(x=>x.rate),
+       backgroundColor:PK.map(k=>c(k,.75)),borderRadius:8}],
+      {yt:{callback:v=>v+'%'}});
+
+  if(ch.marital?.length)
+    bar('marC',ch.marital.map(x=>x.name),[
+      {label:'Employees Left',data:ch.marital.map(x=>x.left),backgroundColor:[c('coral'),c('navy'),c('gold')],borderRadius:6},
+      {label:'Rate %',data:ch.marital.map(x=>x.rate),backgroundColor:[c('coral',.18),c('navy',.18),c('gold',.18)],borderRadius:6,yAxisID:'y2'}],
+      {axes:{y2:{position:'right',grid:{display:false},ticks:{callback:v=>v+'%',color:'#68655c'}}}});
+
+  if(fi.length){
+    const el=document.getElementById('featL');if(el){
+      const mx=fi[0].value;
+      fi.forEach((f,i)=>{
+        const col=PAL[PK[i%PK.length]];
+        el.innerHTML+=`<div class="pb-row">
+          <span class="pb-idx">${String(i+1).padStart(2,'0')}</span>
+          <span class="pb-nm" style="min-width:200px">${f.name}</span>
+          <div class="pb-track"><div class="pb-bar" data-w="${f.value/mx*100}" style="background:${col+'0.72)'}"></div></div>
+          <span class="pb-pct" style="color:${col+'0.9)'}">${(f.value*100).toFixed(1)}%</span>
+        </div>`;
+      });
+    }
+  }
+
+  CH['modC']=new Chart(document.getElementById('modC'),{type:'bar',
+    data:{labels:models.map(m=>m.name),datasets:[
+      {label:'Accuracy',data:models.map(m=>m.accuracy),backgroundColor:c('navy',.72),borderRadius:4},
+      {label:'Recall',  data:models.map(m=>m.recall),  backgroundColor:c('sage',.72),borderRadius:4},
+      {label:'F1 Score',data:models.map(m=>m.f1),      backgroundColor:c('gold',.72),borderRadius:4},
+      {label:'AUC',     data:models.map(m=>m.auc),     backgroundColor:c('coral',.72),borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,padding:12,color:'#68655c'}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#68655c',maxRotation:14}},
+              y:{grid:{color:GG,borderDash:[3,3]},
+                 min:Math.max(0,Math.min(...models.map(m=>m.f1))-.1),max:1,
+                 ticks:{callback:v=>(v*100).toFixed(0)+'%',color:'#68655c'}}}}});
+
+  setTimeout(()=>{
+    document.querySelectorAll('.mm-prog,.pb-bar').forEach(el=>{
+      el.style.width=(el.dataset.w||0)+'%';
+    });
+  },350);
+}
+</script>
+</body>
+</html>
