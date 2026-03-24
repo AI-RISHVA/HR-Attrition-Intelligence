@@ -137,7 +137,7 @@ Demonstrating: End-to-end ML pipeline · Feature engineering · Model evaluation
 
 ##  Connect
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](www.linkedin.com/in/rishva-davariya-1a609b372)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/rishva-davariya-1a609b372)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=flat&logo=github)](https://github.com/AI-RISHVA)
 
 ---
